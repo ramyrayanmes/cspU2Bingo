@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP Unit 2 Bingo</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #ecf0f1;
+            --marked-color: #e74c3c;
+            --text-color: #2c3e50;
+            --border-color: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        #name-display {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        #name-input-section {
+            margin-bottom: 10px;
+        }
+
+        #name-input {
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1em;
+            width: 200px;
+        }
+
+        #set-name-btn, #regenerate-btn {
+            padding: 10px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+            margin: 5px;
+        }
+
+        #set-name-btn:hover, #regenerate-btn:hover {
+            background-color: #2980b9;
+        }
+
+        #bingo-card {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .bingo-cell {
+            background-color: var(--secondary-color);
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            user-select: none;
+            transition: background-color 0.2s, transform 0.1s;
+            border-radius: 4px;
+        }
+
+        .bingo-cell:hover {
+            transform: scale(1.02);
+        }
+
+        .bingo-cell.marked {
+            background-color: var(--marked-color);
+            color: white;
+            border-color: var(--marked-color);
+        }
+
+        .instructions {
+            margin-top: 30px;
+            font-style: italic;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎯 CSP Unit 2 Vocabulary Bingo</h1>
+    <div id="name-display"></div>
+
+    <div id="name-input-section">
+        <input type="text" id="name-input" placeholder="Enter your name">
+        <button id="set-name-btn">Set Name</button>
+    </div>
+    
+    <button id="regenerate-btn">Generate New Card</button>
+
+    <div id="bingo-card">
+        </div>
+
+    <div class="instructions">
+        Directions: Click a square to mark it after the definition is read. Click again to unmark it. Once you form a line, yell out "Bingo!"
+    </div>
+</div>
+
+<script>
+    const vocabulary = [
+        'Computing Device',
+        'Computing System',
+        'Computing Network',
+        'Path',
+        'Bandwidth',
+        'Protocol',
+        'IP Address',
+        'Internet Protocol (IP)',
+        'Router',
+        'Packet',
+        'Redundancy',
+        'Fault Tolerant',
+        'HTTP',
+        'Internet',
+        'World Wide Web',
+        'Digital Divide'
+    ];
+
+    const cardContainer = document.getElementById('bingo-card');
+    const nameInput = document.getElementById('name-input');
+    const setNameBtn = document.getElementById('set-name-btn');
+    const nameDisplay = document.getElementById('name-display');
+    const nameInputSection = document.getElementById('name-input-section');
+    const regenerateBtn = document.getElementById('regenerate-btn');
+
+    // Fisher-Yates (Knuth) Shuffle for randomization
+    function shuffleArray(array) {
+        let currentIndex = array.length;
+        let randomIndex;
+
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [
+                array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function createBingoCard() {
+        // Shuffle the vocabulary array
+        const shuffledVocab = shuffleArray([...vocabulary]); 
+        
+        cardContainer.innerHTML = ''; // Clear any existing card
+
+        // Create the 4x4 grid (16 cells)
+        for (let i = 0; i < 16; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('bingo-cell');
+            cell.textContent = shuffledVocab[i];
+            cell.addEventListener('click', toggleMark);
+            cardContainer.appendChild(cell);
+        }
+    }
+
+    function toggleMark() {
+        this.classList.toggle('marked');
+    }
+
+    function updateNameDisplay() {
+        const userName = nameInput.value.trim();
+        if (userName) {
+            nameDisplay.textContent = `Player: ${userName}`;
+        } else {
+            nameDisplay.textContent = 'Player: [Your Name]';
+        }
+    }
+
+    function handleSetName() {
+        updateNameDisplay();
+        // Hide name input section and show the regenerate button
+        nameInputSection.style.display = 'none'; 
+        regenerateBtn.style.display = 'inline-block';
+    }
+    
+    function handleRegenerateCard() {
+        createBingoCard();
+    }
+
+    // Event listeners
+    setNameBtn.addEventListener('click', handleSetName);
+    nameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleSetName();
+        }
+    });
+    regenerateBtn.addEventListener('click', handleRegenerateCard);
+
+    // Initial setup
+    document.addEventListener('DOMContentLoaded', () => {
+        createBingoCard();
+        updateNameDisplay(); // Set initial placeholder
+        // Hide the regenerate button until a name is set
+        regenerateBtn.style.display = 'none'; 
+    });
+</script>
+
+</body>
+</html>
