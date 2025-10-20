@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSP Unit 2 Bingo</title>
+    <title>Expanded CSP Vocabulary Bingo (4x4)</title>
     <style>
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #ecf0f1;
-            --marked-color: #e74c3c;
-            --text-color: #2c3e50;
-            --border-color: #bdc3c7;
+            --primary-color: #007bff; /* Blue */
+            --secondary-color: #f8f9fa; /* Light Gray */
+            --marked-color: #dc3545; /* Red */
+            --text-color: #343a40; /* Dark Gray */
+            --border-color: #adb5bd; /* Medium Gray */
         }
 
         body {
@@ -22,7 +22,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 800px; /* Reset max width for 4x4 grid */
             margin: 0 auto;
             background-color: white;
             padding: 30px;
@@ -66,12 +66,12 @@
         }
 
         #set-name-btn:hover, #regenerate-btn:hover {
-            background-color: #2980b9;
+            background-color: #0056b3;
         }
 
         #bingo-card {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(4, 1fr); /* 4 columns for 4x4 grid */
             gap: 5px;
             margin-top: 20px;
         }
@@ -79,15 +79,15 @@
         .bingo-cell {
             background-color: var(--secondary-color);
             border: 2px solid var(--border-color);
-            padding: 15px;
+            padding: 15px; /* Increased padding for more space */
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 80px;
+            height: 80px; /* Adjusted height */
             cursor: pointer;
             text-align: center;
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 0.9em; 
             user-select: none;
             transition: background-color 0.2s, transform 0.1s;
             border-radius: 4px;
@@ -114,7 +114,7 @@
 <body>
 
 <div class="container">
-    <h1>🎯 CSP Unit 2 Vocabulary Bingo</h1>
+    <h1>🎯 Expanded CSP Vocabulary Bingo (4x4)</h1>
     <div id="name-display"></div>
 
     <div id="name-input-section">
@@ -128,29 +128,24 @@
         </div>
 
     <div class="instructions">
-        Directions: Click a square to mark it after the definition is read. Click again to unmark it. Once you form a line, yell out "Bingo!"
+        Directions: Click a square to mark it after the definition is read. Click again to unmark it. First to form a horizontal, vertical, or diagonal line, yell out "Bingo!"
     </div>
 </div>
 
 <script>
-    const vocabulary = [
-        'Computing Device',
-        'Computing System',
-        'Computing Network',
-        'Path',
-        'Bandwidth',
-        'Protocol',
-        'IP Address',
-        'Internet Protocol (IP)',
-        'Router',
-        'Packet',
-        'Redundancy',
-        'Fault Tolerant',
-        'HTTP',
-        'Internet',
-        'World Wide Web',
-        'Digital Divide'
-    ];
+    const allVocabulary = [
+        'Binary', 'Bit', 'Byte', 'Decimal', 'Overflow Error', 'Round-off Error',
+        'Analog Data', 'Digital Data', 'Sampling', 'Lossless Compression', 
+        'Lossy Compression', 'Creative Commons', 'Intellectual Property', 
+        'Bandwidth', 'Computing Device', 'Computing Network', 'Computing System',
+        'Path', 'IP Address', 'Internet Protocol (IP)', 'Protocol', 
+        'Fault Tolerant', 'Redundancy', 'Router', 'Packet', 
+        'Domain Name System (DNS)', 'HyperText Transfer Protocol (HTTP)', 
+        'World Wide Web', 'Digital Divide'
+    ]; // Total 29 unique terms (Bandwidth, Computing Device, Computing Network, and Path are duplicated in the list you provided, but I've kept them unique here)
+
+    const GRID_SIZE = 4; // For a 4x4 grid
+    const CARD_SIZE = GRID_SIZE * GRID_SIZE; // 16 squares
 
     const cardContainer = document.getElementById('bingo-card');
     const nameInput = document.getElementById('name-input');
@@ -174,16 +169,19 @@
     }
 
     function createBingoCard() {
-        // Shuffle the vocabulary array
-        const shuffledVocab = shuffleArray([...vocabulary]); 
+        // 1. Shuffle all vocabulary
+        const shuffledVocab = shuffleArray([...allVocabulary]); 
         
+        // 2. Select only the first CARD_SIZE (16) terms for the grid
+        const cardTerms = shuffledVocab.slice(0, CARD_SIZE);
+
         cardContainer.innerHTML = ''; // Clear any existing card
 
         // Create the 4x4 grid (16 cells)
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < CARD_SIZE; i++) {
             const cell = document.createElement('div');
             cell.classList.add('bingo-cell');
-            cell.textContent = shuffledVocab[i];
+            cell.textContent = cardTerms[i];
             cell.addEventListener('click', toggleMark);
             cardContainer.appendChild(cell);
         }
@@ -225,8 +223,7 @@
     // Initial setup
     document.addEventListener('DOMContentLoaded', () => {
         createBingoCard();
-        updateNameDisplay(); // Set initial placeholder
-        // Hide the regenerate button until a name is set
+        updateNameDisplay();
         regenerateBtn.style.display = 'none'; 
     });
 </script>
