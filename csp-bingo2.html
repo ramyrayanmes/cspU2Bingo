@@ -4,88 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AP CSP Vocabulary Bingo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --primary-color: #007bff;
-            --secondary-color: #f8f9fa;
-            --marked-color: #dc3545;
-            --winning-color: #28a745;
-            --text-color: #343a40;
-            --border-color: #adb5bd;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --primary-accent: #0d6efd;
+            --marked-bg: #dc3545;
+            --winning-bg: #198754;
+            --text-main: #1e293b;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            text-align: center;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 600px; 
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            position: relative;
-        }
-
-        .controls {
-            margin-bottom: 20px;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
             align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        input, select, button {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
+        .game-container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 30px;
         }
 
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            cursor: pointer;
-            border: none;
+        .controls-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
         }
-
-        button:hover { background-color: #0056b3; }
 
         .bingo-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-            margin: 20px auto;
+            gap: 10px;
+            margin-bottom: 25px;
         }
 
         .bingo-cell {
             aspect-ratio: 1 / 1;
-            border: 1px solid var(--border-color);
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 5px;
-            cursor: pointer;
+            text-align: center;
+            padding: 8px;
             font-size: 0.75rem;
-            font-weight: bold;
-            background-color: white;
-            transition: background 0.2s;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
             overflow: hidden;
             word-wrap: break-word;
         }
 
+        .bingo-cell:hover {
+            border-color: var(--primary-accent);
+            transform: translateY(-2px);
+        }
+
         .bingo-cell.marked {
-            background-color: var(--marked-color);
+            background: var(--marked-bg);
             color: white;
+            border-color: var(--marked-bg);
         }
 
         .bingo-cell.winner {
+            background: var(--winning-bg) !important;
+            color: white;
+            border-color: var(--winning-bg);
             animation: pulse 1s infinite;
-            background-color: var(--winning-color) !important;
         }
 
         @keyframes pulse {
@@ -94,178 +95,212 @@
             100% { transform: scale(1); }
         }
 
-        #definitionBox {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #fff3cd;
-            border-left: 5px solid #ffc107;
-            text-align: left;
-            min-height: 60px;
-            font-size: 0.9rem;
+        .definition-card {
+            background: #fff9db;
+            border: 1px solid #ffec99;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 120px;
         }
 
-        #confetti {
+        #confetti-canvas {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
-            z-index: 1000;
+            z-index: 9999;
         }
 
-        #bingoMessage {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+        #bingo-overlay {
+            position: fixed;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 5rem;
-            font-weight: bold;
-            color: var(--winning-color);
+            font-size: 6rem;
+            font-weight: 900;
+            color: var(--winning-bg);
+            z-index: 10000;
             display: none;
-            z-index: 1001;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            text-shadow: 0 10px 30px rgba(0,0,0,0.2);
             pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-<canvas id="confetti"></canvas>
-<div id="bingoMessage">BINGO!</div>
+<canvas id="confetti-canvas"></canvas>
+<div id="bingo-overlay">BINGO!</div>
 
-<div class="container">
-    <h1>CSP Bingo</h1>
+<div class="game-container">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold text-primary">AP CSP BINGO</h1>
+        <p class="text-muted">Interactive Vocabulary Review</p>
+    </div>
     
-    <div class="controls">
-        <input type="text" id="nameInput" placeholder="Enter Name">
-        <select id="unitSelect">
-            <option value="All">All Units</option>
-            <option value="Unit 1">Unit 1: Digital Information</option>
-            <option value="Unit 2">Unit 2: The Internet</option>
-            <option value="Unit 3">Unit 3: Intro to App Design</option>
-            <option value="Unit 4">Unit 4: Variables, Conditionals, and Functions</option>
-            <option value="Unit 5">Unit 5: Data</option>
-            <option value="Units 6 & 7">Units 6 & 7: Lists & Logic</option>
-            <option value="Unit 8">Unit 8: Cybersecurity</option>
-            <option value="Unit 10">Unit 10: Algorithms</option>
-        </select>
-        <button id="regenBtn">New Card</button>
+    <div class="controls-section">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label small fw-bold">Student Name</label>
+                <input type="text" id="nameInput" class="form-control" placeholder="Type your name...">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold">Select Unit</label>
+                <select id="unitSelect" class="form-select">
+                    <option value="All">Full Curriculum (All Units)</option>
+                    <option value="Unit 1">Unit 1: Digital Information</option>
+                    <option value="Unit 2">Unit 2: The Internet</option>
+                    <option value="Unit 3">Unit 3: Intro to App Design</option>
+                    <option value="Unit 4">Unit 4: Variables & Functions</option>
+                    <option value="Unit 5">Unit 5: Data</option>
+                    <option value="Units 6 & 7">Units 6 & 7: Lists & Logic</option>
+                    <option value="Unit 8">Unit 8: Cybersecurity</option>
+                    <option value="Unit 10">Unit 10: Algorithms</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button id="regenBtn" class="btn btn-primary w-100 fw-bold">Generate New Game Board</button>
+            </div>
+        </div>
     </div>
 
-    <h3 id="playerDisplay">Player: [Your Name]</h3>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="badge bg-secondary px-3 py-2" id="playerDisplay">Player: [Your Name]</span>
+    </div>
+
     <div class="bingo-grid" id="grid"></div>
 
-    <div id="definitionBox">
-        <strong>Definition:</strong> <span id="defText">Click a tile to see the definition.</span>
+    <div class="definition-card" id="defBox">
+        <div id="defContent">
+            <p class="text-muted text-center mt-3">Click a tile to reveal its definition.</p>
+        </div>
     </div>
 </div>
 
 <script>
+    // FULL VOCABULARY LIST FROM SOURCE 
     const vocab = [
-        {"term": "Binary", "definition": "A Way Of Representing Information Using Only Two Options", "unit": "Unit 1"},
-        {"term": "Bit", "definition": "A Contraction Of \"Binary Digit\"; The Single Unit Of Information In A Computer, Typically Represented As A 0 Or 1", "unit": "Unit 1"},
-        {"term": "Byte", "definition": "8 Bits", "unit": "Unit 1"},
-        {"term": "Decimal", "definition": "A Way Of Representing Information Using Ten Options", "unit": "Unit 1"},
-        {"term": "Overflow Error", "definition": "Error From Attempting To Represent A Number That Is Too Large", "unit": "Unit 1"},
-        {"term": "Round-off Error", "definition": "Error From Attempting To Represent A Number That Is Too Precise.", "unit": "Unit 1"},
-        {"term": "Analog Data", "definition": "Data With Values That Change Continuously, Or Smoothly, Over Time.", "unit": "Unit 1"},
-        {"term": "Digital Data", "definition": "Data That Changes Discretely Through A Finite Set Of Possible Values", "unit": "Unit 1"},
-        {"term": "Sampling", "definition": "A Process For Creating A Digital Representation Of Analog Data.", "unit": "Unit 1"},
-        {"term": "Lossless Compression", "definition": "Reducing Bits Without Losing Information. Reversible.", "unit": "Unit 1"},
-        {"term": "Lossy Compression", "definition": "Reducing Bits Where Some Information Is Lost. Not Reversible.", "unit": "Unit 1"},
-        {"term": "Intellectual Property", "definition": "A Work Or Invention Resulting From Creativity.", "unit": "Unit 1"},
-        {"term": "Creative Commons", "definition": "Licenses Enabling Free Distribution Of Copyrighted Work.", "unit": "Unit 1"},
-        {"term": "Computing Device", "definition": "A Machine That Can Run A Program (Computers, Tablets, Routers).", "unit": "Unit 2"},
-        {"term": "Computing System", "definition": "A Group Of Computing Devices And Programs Working Together.", "unit": "Unit 2"},
-        {"term": "Computing Network", "definition": "A Group Of Interconnected Computing Devices.", "unit": "Unit 2"},
-        {"term": "Path", "definition": "The Series Of Connections Between Devices On A Network.", "unit": "Unit 2"},
-        {"term": "Bandwidth", "definition": "Maximum Amount Of Data Sent In A Fixed Amount Of Time.", "unit": "Unit 2"},
-        {"term": "Protocol", "definition": "Agreed-Upon Rules That Specify System Behavior.", "unit": "Unit 2"},
-        {"term": "IP Address", "definition": "Unique Number Assigned To Each Device On The Internet.", "unit": "Unit 2"},
-        {"term": "Internet Protocol (IP)", "definition": "Protocol For Sending Data Using Unique Numbers.", "unit": "Unit 2"},
-        {"term": "Router", "definition": "A Type Of Computer That Forwards Data Across A Network.", "unit": "Unit 2"},
-        {"term": "Redundancy", "definition": "Inclusion Of Extra Components To Maintain Function If Parts Fail.", "unit": "Unit 2"},
-        {"term": "Fault Tolerant", "definition": "Can Continue To Function Even In The Event Of Failures.", "unit": "Unit 2"},
-        {"term": "Packet", "definition": "A Chunk Of Data Sent Over A Network.", "unit": "Unit 2"},
-        {"term": "HTTP", "definition": "Protocol For Transmitting Web Pages.", "unit": "Unit 2"},
-        {"term": "Internet", "definition": "The Widely Available Network Of Networks.", "unit": "Unit 2"},
-        {"term": "World Wide Web", "definition": "A System Of Linked Pages, Programs, And Files.", "unit": "Unit 2"},
-        {"term": "Digital Divide", "definition": "Differing Access To Computing Devices And The Internet.", "unit": "Unit 2"},
-        {"term": "DNS", "definition": "Translates Domain Names Into IP Addresses.", "unit": "Unit 2"},
-        {"term": "User Interface", "definition": "Inputs/Outputs Allowing User Interaction With Software.", "unit": "Unit 3"},
-        {"term": "Input", "definition": "Data Sent To A Computer For Processing.", "unit": "Unit 3"},
-        {"term": "Output", "definition": "Data Sent From A Program To A Device.", "unit": "Unit 3"},
-        {"term": "Program Statement", "definition": "A Command Or Instruction.", "unit": "Unit 3"},
-        {"term": "Program", "definition": "A Collection Of Program Statements.", "unit": "Unit 3"},
-        {"term": "Sequential Programming", "definition": "Statements Run In Order, From Top To Bottom.", "unit": "Unit 3"},
-        {"term": "Event Driven Programming", "definition": "Statements Run When Triggered By An Event.", "unit": "Unit 3"},
-        {"term": "Documentation", "definition": "Written Description Of How Code Works.", "unit": "Unit 3"},
-        {"term": "Comment", "definition": "Notes Written For People; Does Not Affect Code Execution.", "unit": "Unit 3"},
-        {"term": "Debugging", "definition": "Finding And Fixing Problems In Code.", "unit": "Unit 3"},
-        {"term": "Pair Programming", "definition": "Collaborative Style With Two Programmers.", "unit": "Unit 3"},
-        {"term": "Event", "definition": "Action like a click that triggers a code block.", "unit": "Unit 3"},
-        {"term": "Development Process", "definition": "Phases Used To Create Software.", "unit": "Unit 3"},
-        {"term": "Expression", "definition": "Operators And Values Evaluating To A Single Value.", "unit": "Unit 4"},
-        {"term": "Assignment Operator", "definition": "Changes The Value Represented By A Variable.", "unit": "Unit 4"},
-        {"term": "Variable", "definition": "A Named Reference To A Value.", "unit": "Unit 4"},
-        {"term": "String", "definition": "An Ordered Sequence Of Characters.", "unit": "Unit 4"},
-        {"term": "Boolean Value", "definition": "A Data Type That Is Either True Or False.", "unit": "Unit 4"},
-        {"term": "Comparison Operators", "definition": "<, >, <=, >=, ==, !=.", "unit": "Unit 4"},
-        {"term": "Logical Operators", "definition": "NOT, AND, OR.", "unit": "Unit 4"},
-        {"term": "Conditional", "definition": "Executes Statements Based On Boolean Logic.", "unit": "Unit 4"},
-        {"term": "Function", "definition": "A Named Group Of Programming Instructions.", "unit": "Unit 4"},
-        {"term": "Correlation", "definition": "A Relationship Between Two Pieces Of Data.", "unit": "Unit 5"},
-        {"term": "Data filtering", "definition": "Choosing A Smaller Subset Of A Data Set.", "unit": "Unit 5"},
-        {"term": "Cleaning Data", "definition": "Making Data Uniform Without Changing Meaning.", "unit": "Unit 5"},
-        {"term": "Citizen Science", "definition": "Research Conducted By Distributed Individuals.", "unit": "Unit 5"},
-        {"term": "Metadata", "definition": "Data About Data.", "unit": "Unit 5"},
-        {"term": "List", "definition": "An Ordered Collection Of Elements.", "unit": "Units 6 & 7"},
-        {"term": "Element", "definition": "Individual Value In A List Assigned An Index.", "unit": "Units 6 & 7"},
-        {"term": "Iteration", "definition": "A Repetitive Portion Of An Algorithm.", "unit": "Units 6 & 7"},
-        {"term": "Traversal", "definition": "Accessing Each Item In A List One At A Time.", "unit": "Units 6 & 7"},
-        {"term": "Parameter", "definition": "A Variable Acting As A Placeholder In A Function.", "unit": "Units 6 & 7"},
-        {"term": "Return", "definition": "Sends A Value Back To Where A Function Was Called.", "unit": "Units 6 & 7"},
-        {"term": "Library", "definition": "A Group Of Functions Used For New Programs.", "unit": "Units 6 & 7"},
-        {"term": "PII", "definition": "Information About An Individual That Identifies Them.", "unit": "Unit 8"},
-        {"term": "Phishing", "definition": "Tricking A User Into Providing Personal Information.", "unit": "Unit 8"},
-        {"term": "Malware", "definition": "Software Intended To Damage A System.", "unit": "Unit 8"},
-        {"term": "Encryption", "definition": "Encoding Messages To Keep Them Secret.", "unit": "Unit 8"},
-        {"term": "Algorithm", "definition": "A Finite Set Of Instructions That Accomplish A Task.", "unit": "Unit 10"},
-        {"term": "Binary Search", "definition": "Search Algorithm That Halves Data Each Step.", "unit": "Unit 10"},
-        {"term": "Efficiency", "definition": "Measure Of Steps Needed To Complete A Task.", "unit": "Unit 10"}
+        {term: "Binary", unit: "Unit 1", definition: "A Way Of Representing Information Using Only Two Options"},
+        {term: "Bit", unit: "Unit 1", definition: "A Contraction Of \"Binary Digit\"; The Single Unit Of Information In A Computer, Typically Represented As A 0 Or 1"},
+        {term: "Byte", unit: "Unit 1", definition: "8 Bits"},
+        {term: "Decimal", unit: "Unit 1", definition: "A Way Of Representing Information Using Ten Options"},
+        {term: "Overflow Error", unit: "Unit 1", definition: "Error From Attempting To Represent A Number That Is Too Large"},
+        {term: "Round-off Error", unit: "Unit 1", definition: "Error From Attempting To Represent A Number That Is Too Precise. The Value Is Rounded."},
+        {term: "Analog Data", unit: "Unit 1", definition: "Data With Values That Change Continuously, Or Smoothly, Over Time."},
+        {term: "Digital Data", unit: "Unit 1", definition: "Data That Changes Discretely Through A Finite Set Of Possible Values"},
+        {term: "Sampling", unit: "Unit 1", definition: "A Process For Creating A Digital Representation Of Analog Data By Measuring The Analog Data At Regular Intervals."},
+        {term: "Lossless Compression", unit: "Unit 1", definition: "Reducing Bits Without Losing Information. This Process Is Reversible."},
+        {term: "Lossy Compression", unit: "Unit 1", definition: "Reducing Bits In Which Some Information Is Lost. This Process Is Not Reversible."},
+        {term: "Intellectual Property", unit: "Unit 1", definition: "A Work Or Invention Resulting From Creativity To Which One Has Rights."},
+        {term: "Creative Commons", unit: "Unit 1", definition: "Public Copyright Licenses Enabling Free Distribution Of Otherwise Copyrighted Work."},
+        {term: "Computing Device", unit: "Unit 2", definition: "A Machine That Can Run A Program, Including Computers, Tablets, Servers, Routers, And Smart Sensors"},
+        {term: "Computing System", unit: "Unit 2", definition: "A Group Of Computing Devices And Programs Working Together For A Common Purpose"},
+        {term: "Computing Network", unit: "Unit 2", definition: "A Group Of Interconnected Computing Devices Capable Of Sending Or Receiving Data."},
+        {term: "Path", unit: "Unit 2", definition: "The Series Of Connections Between Computing Devices On A Network Starting With A Sender And Ending With A Receiver"},
+        {term: "Bandwidth", unit: "Unit 2", definition: "Maximum Amount Of Data Sent In A Fixed Amount Of Time (Bits Per Second)"},
+        {term: "Protocol", unit: "Unit 2", definition: "An Agreed-Upon Set Of Rules That Specify The Behavior Of Some System"},
+        {term: "IP Address", unit: "Unit 2", definition: "The Unique Number Assigned To Each Device On The Internet"},
+        {term: "Internet Protocol (IP)", unit: "Unit 2", definition: "A Protocol For Sending Data Across The Internet That Assigns Unique Numbers (Ip Addresses)"},
+        {term: "Router", unit: "Unit 2", definition: "A Type Of Computer That Forwards Data Across A Network"},
+        {term: "Redundancy", unit: "Unit 2", definition: "Inclusion Of Extra Components So A System Can Work Even If Individual Components Fail"},
+        {term: "Fault Tolerant", unit: "Unit 2", definition: "Can Continue To Function Even In The Event Of Individual Component Failures."},
+        {term: "Packet", unit: "Unit 2", definition: "A Chunk Of Data Sent Over A Network. Messages Are Divided Into Packets."},
+        {term: "HTTP", unit: "Unit 2", definition: "The Protocol Used For Transmitting Web Pages Over The Internet"},
+        {term: "Internet", unit: "Unit 2", definition: "The Widely Available Network Of Networks"},
+        {term: "World Wide Web", unit: "Unit 2", definition: "A System Of Linked Pages, Programs, And Files"},
+        {term: "Digital Divide", unit: "Unit 2", definition: "Differing Access To Computing Devices And The Internet Based On Socioeconomic Or Geographic Factors"},
+        {term: "DNS", unit: "Unit 2", definition: "Translates Domain Names Into IP Addresses"},
+        {term: "User Interface", unit: "Unit 3", definition: "The Inputs And Outputs That Allow A User To Interact With Software."},
+        {term: "Input", unit: "Unit 3", definition: "Data Sent To A Computer For Processing By A Program."},
+        {term: "Output", unit: "Unit 3", definition: "Any Data Sent From A Program To A Device."},
+        {term: "Program Statement", unit: "Unit 3", definition: "A Command Or Instruction. Also Referred To As A Code Statement."},
+        {term: "Program", unit: "Unit 3", definition: "A Collection Of Program Statements Executed One At A Time."},
+        {term: "Sequential Programming", unit: "Unit 3", definition: "Program Statements Run In Order, From Top To Bottom"},
+        {term: "Event Driven Programming", unit: "Unit 3", definition: "Program Statements Run When Triggered By An Event like A Mouse Click."},
+        {term: "Documentation", unit: "Unit 3", definition: "A Written Description Of How A Command Or Piece Of Code Works."},
+        {term: "Comment", unit: "Unit 3", definition: "Notes In A Program Read By People That Do Not Affect How A Program Runs"},
+        {term: "Debugging", unit: "Unit 3", definition: "Finding And Fixing Problems In An Algorithm Or Program"},
+        {term: "Pair Programming", unit: "Unit 3", definition: "Collaborative Style Where Two Programmers Switch Between Writing Code And Planning."},
+        {term: "Development Process", unit: "Unit 3", definition: "Phases Used To Create Software: Investigating, Designing, Prototyping, Testing."},
+        {term: "Expression", unit: "Unit 4", definition: "A Combination Of Operators And Values That Evaluates To A Single Value"},
+        {term: "Assignment Operator", unit: "Unit 4", definition: "Allows A Program To Change The Value Represented By A Variable"},
+        {term: "Variable", unit: "Unit 4", definition: "A Named Reference To A Value That Can Be Used Throughout A Program"},
+        {term: "String", unit: "Unit 4", definition: "An Ordered Sequence Of Characters"},
+        {term: "Boolean Value", unit: "Unit 4", definition: "A Data Type That Is Either True Or False"},
+        {term: "Comparison Operators", unit: "Unit 4", definition: "<, >, <=, >=, ==, != (Indicate A Boolean Expression)"},
+        {term: "Logical Operators", unit: "Unit 4", definition: "Not, And, And Or (Evaluate To A Boolean Value)"},
+        {term: "Conditional Statement", unit: "Unit 4", definition: "Executes Different Statements Based On The Value Of A Boolean Expression"},
+        {term: "Function", unit: "Unit 4", definition: "A Named Group Of Programming Instructions. Also Referred To As A Procedure."},
+        {term: "Function Call", unit: "Unit 4", definition: "A Command That Executes The Code Within A Function"},
+        {term: "Correlation", unit: "Unit 5", definition: "A Relationship Between Two Pieces Of Data."},
+        {term: "Data filtering", unit: "Unit 5", definition: "Choosing A Smaller Subset Of A Data Set To Use For Analysis."},
+        {term: "Cleaning Data", unit: "Unit 5", definition: "Making Data Uniform Without Changing Its Meaning."},
+        {term: "Citizen Science", unit: "Unit 5", definition: "Research Conducted By Distributed Individuals Who Contribute Data."},
+        {term: "Crowdsourcing", unit: "Unit 5", definition: "Obtaining Input From A Large Number Of People Via The Internet"},
+        {term: "Information", unit: "Unit 5", definition: "Collection Of Facts And Patterns Extracted From Data"},
+        {term: "Metadata", unit: "Unit 5", definition: "Data About Data"},
+        {term: "Data bias", unit: "Unit 5", definition: "Data That Does Not Accurately Reflect The Full Population."},
+        {term: "List", unit: "Units 6 & 7", definition: "An Ordered Collection Of Elements"},
+        {term: "Element", unit: "Units 6 & 7", definition: "Individual Value In A List Assigned A Unique Index"},
+        {term: "Index", unit: "Units 6 & 7", definition: "Referencing Elements In A List Or String Using Numbers"},
+        {term: "Data abstraction", unit: "Units 6 & 7", definition: "Managing Complexity By Giving Data A Name Without Referencing Specific Details"},
+        {term: "Iteration", unit: "Units 6 & 7", definition: "A Repetitive Portion Of An Algorithm (Looping)"},
+        {term: "Infinite loop", unit: "Units 6 & 7", definition: "Occurs When The Ending Condition Will Never Evaluate To True"},
+        {term: "Traversal", unit: "Units 6 & 7", definition: "The Process Of Accessing Each Item In A List One At A Time"},
+        {term: "Parameter", unit: "Units 6 & 7", definition: "A Variable In A Function Definition Acting As A Placeholder."},
+        {term: "Argument", unit: "Units 6 & 7", definition: "The Value Passed To The Parameter"},
+        {term: "Return", unit: "Units 6 & 7", definition: "Returns Control To The Point Where The Function Was Called With A Value."},
+        {term: "Procedural abstraction", unit: "Units 6 & 7", definition: "Allows A Procedure To Be Used By Knowing What It Does, Not How It Does It."},
+        {term: "Library", unit: "Units 6 & 7", definition: "A Group Of Functions Used In Creating New Programs"},
+        {term: "Modularity", unit: "Units 6 & 7", definition: "Subdivision Of A Computer Program Into Separate Subprograms"},
+        {term: "API", unit: "Units 6 & 7", definition: "Specifications For How Functions In A Library Behave"},
+        {term: "Computing Innovation", unit: "Unit 8", definition: "Includes A Program As An Integral Part Of Its Function (Physical Or Software)."},
+        {term: "PII", unit: "Unit 8", definition: "Information About An Individual That Identifies Or Describes Them"},
+        {term: "Phishing", unit: "Unit 8", definition: "Trick A User Into Providing Personal Information."},
+        {term: "Keylogging", unit: "Unit 8", definition: "Recording Keystrokes To Gain Fraudulent Access To Confidential Info"},
+        {term: "Malware", unit: "Unit 8", definition: "Software Intended To Damage A System Or Take Control Of It"},
+        {term: "Encryption", unit: "Unit 8", definition: "Encoding Messages To Keep Them Secret From Unauthorized Parties"},
+        {term: "Decryption", unit: "Unit 8", definition: "Reversing Encryption To Reproduce Original Plain Text"},
+        {term: "Symmetric Key Encryption", unit: "Unit 8", definition: "Involves One Key For Both Encryption And Decryption"},
+        {term: "Public Key Encryption", unit: "Unit 8", definition: "Pairs A Public Key For Encryption And A Private Key For Decryption."},
+        {term: "Multi-factor Authentication", unit: "Unit 8", definition: "Requires At Least Two Steps To Unlock Protected Information"},
+        {term: "Algorithm", unit: "Unit 10", definition: "A Finite Set Of Instructions That Accomplish A Task"},
+        {term: "Efficiency", unit: "Unit 10", definition: "Measure Of How Many Steps Are Needed To Complete An Algorithm"},
+        {term: "Linear Search", unit: "Unit 10", definition: "Checks Each Element Of A List In Order Until Found."},
+        {term: "Binary Search", unit: "Unit 10", definition: "Search That Halves Sorted Data Until Desired Value Is Found."},
+        {term: "Reasonable Time", unit: "Unit 10", definition: "Algorithms With Polynomial Efficiency Or Lower."},
+        {term: "Heuristic", unit: "Unit 10", definition: "Provides A \"Good Enough\" Solution When Actual Solution Is Impractical."},
+        {term: "Parallel Computing", unit: "Unit 10", definition: "Programs Are Broken Into Pieces Run Simultaneously."},
+        {term: "Distributed Computing", unit: "Unit 10", definition: "Programs Are Run By Multiple Devices."}
     ];
 
     const grid = document.getElementById('grid');
-    const defText = document.getElementById('defText');
+    const defContent = document.getElementById('defContent');
     const unitSelect = document.getElementById('unitSelect');
     const nameInput = document.getElementById('nameInput');
     const playerDisplay = document.getElementById('playerDisplay');
-    const bingoMsg = document.getElementById('bingoMessage');
-    const canvas = document.getElementById('confetti');
+    const bingoOverlay = document.getElementById('bingo-overlay');
+    const canvas = document.getElementById('confetti-canvas');
     const ctx = canvas.getContext('2d');
 
     let pieces = [];
     let gameWon = false;
-    let animationId = null;
+    let animId = null;
 
-    function resetAnimation() {
+    function resetVisuals() {
         gameWon = false;
-        bingoMsg.style.display = 'none';
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-            animationId = null;
-        }
+        bingoOverlay.style.display = 'none';
+        if (animId) cancelAnimationFrame(animId);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         pieces = [];
+        defContent.innerHTML = '<p class="text-muted text-center mt-3">Click a tile to reveal its definition.</p>';
     }
 
     function initBoard() {
-        resetAnimation();
+        resetVisuals();
         grid.innerHTML = '';
         
         let pool = unitSelect.value === 'All' ? vocab : vocab.filter(v => v.unit.includes(unitSelect.value));
         
+        // Ensure we have 16 items even if a unit is small [cite: 5, 8]
         if (pool.length < 16) {
             let extras = vocab.filter(v => !pool.includes(v));
             pool = [...pool, ...extras.sort(() => 0.5 - Math.random()).slice(0, 16 - pool.length)];
@@ -273,14 +308,13 @@
 
         const shuffled = pool.sort(() => 0.5 - Math.random()).slice(0, 16);
 
-        shuffled.forEach((item, index) => {
+        shuffled.forEach(item => {
             const cell = document.createElement('div');
             cell.className = 'bingo-cell';
             cell.textContent = item.term;
-            cell.dataset.index = index;
             cell.onclick = () => {
                 cell.classList.toggle('marked');
-                defText.innerHTML = `<strong>${item.term}:</strong> ${item.definition}`;
+                defContent.innerHTML = `<h6 class="fw-bold text-primary mb-1">${item.term} (${item.unit})</h6><p class="small mb-0">${item.definition}</p>`;
                 checkBingo();
             };
             grid.appendChild(cell);
@@ -290,64 +324,56 @@
     function checkBingo() {
         const cells = document.querySelectorAll('.bingo-cell');
         const marked = Array.from(cells).map(c => c.classList.contains('marked'));
-        
         const lines = [
             [0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], // Rows
             [0,4,8,12], [1,5,9,13], [2,6,10,14], [3,7,11,15], // Cols
             [0,5,10,15], [3,6,9,12] // Diagonals
         ];
 
-        let foundBingo = false;
-        for (let line of lines) {
-            if (line.every(idx => marked[idx])) {
-                line.forEach(idx => cells[idx].classList.add('winner'));
-                foundBingo = true;
+        let hasWon = false;
+        lines.forEach(line => {
+            if (line.every(i => marked[i])) {
+                line.forEach(i => cells[i].classList.add('winner'));
+                hasWon = true;
             }
-        }
+        });
 
-        if (foundBingo && !gameWon) {
-            triggerBingo();
+        if (hasWon && !gameWon) {
+            gameWon = true;
+            bingoOverlay.style.display = 'block';
+            startConfetti();
         }
-    }
-
-    function triggerBingo() {
-        gameWon = true;
-        bingoMsg.style.display = 'block';
-        startConfetti();
     }
 
     function startConfetti() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        pieces = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 150; i++) {
             pieces.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height - canvas.height,
-                size: Math.random() * 10 + 5,
-                color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-                speed: Math.random() * 3 + 2
+                s: Math.random() * 8 + 4,
+                c: `hsl(${Math.random() * 360}, 80%, 50%)`,
+                v: Math.random() * 4 + 2
             });
         }
-        animateConfetti();
+        drawConfetti();
     }
 
-    function animateConfetti() {
+    function drawConfetti() {
         if (!gameWon) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         pieces.forEach(p => {
-            p.y += p.speed;
-            if (p.y > canvas.height) p.y = -10;
-            ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, p.size, p.size);
+            p.y += p.v;
+            if (p.y > canvas.height) p.y = -20;
+            ctx.fillStyle = p.c;
+            ctx.fillRect(p.x, p.y, p.s, p.s);
         });
-        animationId = requestAnimationFrame(animateConfetti);
+        animId = requestAnimationFrame(drawConfetti);
     }
 
     nameInput.oninput = () => playerDisplay.textContent = `Player: ${nameInput.value || '[Your Name]'}`;
     document.getElementById('regenBtn').onclick = initBoard;
-    unitSelect.onchange = initBoard;
-
     initBoard();
 </script>
 </body>
